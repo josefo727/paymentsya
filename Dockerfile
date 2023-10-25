@@ -1,58 +1,25 @@
-# Use PHP 8.2 FPM Alpine as base image
-FROM php:8.2-fpm-alpine
+FROM webdevops/php-nginx:8.2-alpine
 
-# Install system dependencies
-RUN apk update && apk add --no-cache \
-    git \
-    curl \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    libzip-dev \
-    openssh-client \
-    icu-dev \
-    nginx \
-    supervisor \
-    nano \
-    vim \
-    nodejs \
-    npm
+ENV WEB_DOCUMENT_ROOT=/app/public
 
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-jpeg=/usr/include/ \
-    && docker-php-ext-install \
-    gd \
-    bcmath \
-    ctype \
-    fileinfo \
-    mbstring \
-    pdo_mysql \
-    xml \
-    intl \
-    zip
+ENV PHP_DISMOD=bz2,calendar,exiif,ffi,gettext,ldap,mysqli,imap,pdo_pgsql,pgsql,soap,sockets,sysvmsg,sysvsm,sysvshm,shmop,xsl,apcu,vips,yaml,imagick,mongodb,amqp
 
-# Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set working directory
 WORKDIR /app
 
-# Remove default server configuration
-RUN rm /etc/nginx/nginx.conf
+# Instalar Node.js y npm
+RUN apk add --update nodejs npm
 
-# Copy nginx and supervisor configuration
-COPY ./docker/nginx.conf /etc/nginx/nginx.conf
-COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY ./docker/php.ini /usr/local/etc/php/conf.d/99-custom.ini
+# Instalar supervisord
+RUN apk add --no-cache supervisor
 
-# Set permissions
-RUN chown -R www-data:www-data .
+# Instalar Bash
+RUN apk add --no-cache bash nano
 
-# Start Nginx and PHP-FPM via Supervisor
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Copiar el archivo de configuración de supervisord
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Ensure all of our files are owned by the same user and group.
+RUN chown -R application:application .
 
 # Expose port 80
 EXPOSE 80
