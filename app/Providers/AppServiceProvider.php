@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use App\Models\TransactionResponse;
-use App\Observers\TransactionResponseObserver;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\ServiceProvider;
+use App\Observers\TransactionResponseObserver;
 use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Database\Events\MigrationsStarted;
 
@@ -27,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if($this->app->environment('production')) {
-            \URL::forceScheme('https');
+            URL::forceScheme('https');
         }
 
         TransactionResponse::observe(TransactionResponseObserver::class);
