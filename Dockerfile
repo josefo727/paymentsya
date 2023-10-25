@@ -13,6 +13,7 @@ RUN apk update && apk add --no-cache \
     unzip \
     libzip-dev \
     openssh-client \
+    icu-dev \
     nginx \
     supervisor \
     nano \
@@ -30,6 +31,7 @@ RUN docker-php-ext-configure gd --with-jpeg=/usr/include/ \
     mbstring \
     pdo_mysql \
     xml \
+    intl \
     zip
 
 # Get latest Composer
