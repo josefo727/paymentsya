@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Classes\Status;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ class TransactionResponse extends Model
 
     protected $casts = [
         'approved' => 'boolean',
+        'response' => 'json',
     ];
 
     /**
@@ -37,5 +39,17 @@ class TransactionResponse extends Model
             'approved' => $request->idstatus['id'] === self::APPROVED_ID,
             'response' => $jsonString,
         ]);
+    }
+
+    /**
+     *
+     * @return bool
+     */
+    public function shouldBeCancelledAccordingToItsStatus(): bool
+    {
+        $id = data_get($this->response, 'idstatus.id');
+        return collect(Status::PY_STATES_TRIGGERING_CANCELLATION)
+            ->map(fn($status) => $status['id'])
+            ->contains($id);
     }
 }

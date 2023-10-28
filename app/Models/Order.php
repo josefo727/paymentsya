@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Classes\Status;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -84,6 +85,28 @@ class Order extends Model
         $orderId = static::removePrefix($externalOrder);
 
         return static::getOrderByOrderId($orderId);
+    }
+
+    /**
+     * @return bool
+     */
+    public function cannotBeCancelled(): bool
+    {
+        return $this->status !== Status::NEEDS_APPROVAL
+            || $this->transactionResponseApproved()->exists();
+    }
+
+    /**
+     * @return bool
+     */
+    public function needsApproval(): bool
+    {
+        return $this->status === Status::NEEDS_APPROVAL
+            && (
+                $this->wasRecentlyCreated
+                || is_null($this->payment_url)
+                || !$this->transactionResponse()->exists()
+            );
     }
 
 }

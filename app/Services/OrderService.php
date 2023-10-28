@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Adapters\VtexAdapter;
-use Carbon\Carbon;
 use App\Classes\Status;
 use App\Models\Order;
 
@@ -56,7 +55,7 @@ class OrderService
             $this->response['needs_to_process'] = false;
             $this->response['message'] = 'En espera de respuesta.';
 
-            if ($savedOrder->status === Status::NEEDS_APPROVAL && ($savedOrder->wasRecentlyCreated || is_null($savedOrder->payment_url))) {
+            if ($savedOrder->needsApproval()) {
                 $this->response['needs_to_process'] = true;
                 $this->response['message'] = 'Se necesita procesar pago.';
             }
@@ -82,6 +81,7 @@ class OrderService
         return is_array($vtexPaymentSystems)
             && in_array($paymentSystem, $vtexPaymentSystems)
             && $order['status'] === Status::ACTIONABLE_VTEX_STATE;
+
     }
 
     /**
@@ -105,7 +105,7 @@ class OrderService
             "cell_phone" => $client['isCorporate'] ? $client['corporatePhone'] : $client['phone'],
             "address" => $this->buildAddress($address),
             "order" => $order['orderId'],
-            "entity_url" => config('vtex.url_og') . $order['orderGroup'],
+            "entity_url" => $this->urlRedirect,
             "ip" => request()->getClientIp(),
             'vtex_status' => $order['status'],
             'status' => Status::NEEDS_APPROVAL,
