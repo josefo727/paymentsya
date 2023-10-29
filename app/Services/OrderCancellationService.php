@@ -18,7 +18,7 @@ class OrderCancellationService
         $orders = Order::query()
             ->whereDoesntHave('transactionResponseApproved')
             ->where('status', Status::NEEDS_APPROVAL)
-            ->where('order_creation_at', '<=', Carbon::now('UTC')->subMinutes(5))
+            ->where('order_creation_at', '<=', Carbon::now('UTC')->subMinutes(10))
             ->get();
 
         $orders->each(fn($order) => $this->cancelOrder($order));
