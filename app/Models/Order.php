@@ -56,6 +56,13 @@ class Order extends Model
             ->where('approved', true);
     }
 
+    public function transactionResponseRejected(): HasMany
+    {
+        $statuses = collect(Status::PY_STATES_TRIGGERING_CANCELLATION)->map(fn($status) => $status['name'])->toArray();
+        return $this->hasMany(TransactionResponse::class)
+            ->whereIn('status', $statuses);
+    }
+
     /**
      * @param string $externalOrder
      * @return string
@@ -105,7 +112,7 @@ class Order extends Model
             && (
                 $this->wasRecentlyCreated
                 || is_null($this->payment_url)
-                || !$this->transactionResponse()->exists()
+                || !$this->transactionResponseRejected()->exists()
             );
     }
 
