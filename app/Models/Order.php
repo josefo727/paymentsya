@@ -56,6 +56,15 @@ class Order extends Model
             ->where('approved', true);
     }
 
+    /**
+     * @return HasOne
+     */
+    public function transactionResponsePending(): HasOne
+    {
+        return $this->hasOne(TransactionResponse::class)
+            ->where('status', Status::PW_PENDING['name']);
+    }
+
     public function transactionResponseRejected(): HasMany
     {
         $statuses = collect(Status::PY_STATES_TRIGGERING_CANCELLATION)->map(fn($status) => $status['name'])->toArray();
@@ -109,6 +118,7 @@ class Order extends Model
     public function needsApproval(): bool
     {
         return $this->status === Status::NEEDS_APPROVAL
+			&& !$this->transactionResponsePending()->exists()
             && (
                 $this->wasRecentlyCreated
                 || is_null($this->payment_url)

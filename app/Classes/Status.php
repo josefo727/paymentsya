@@ -8,6 +8,10 @@ class Status
     public const APPROVED = 'approved';
     public const CANCELED = 'canceled';
     public const ACTIONABLE_VTEX_STATE = 'payment-pending';
+    public const PW_PENDING = [
+        'id' => 35,
+        'name' => 'Pendiente',
+    ];
     public const PW_FAILED = [
         'id' => 36,
         'name' => 'Fallida',
