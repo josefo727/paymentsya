@@ -13,14 +13,15 @@ class DomainUrlService
     public function generate(Request $request): string|null
     {
         $origin = $request->headers->get('Origin');
-        $masterDomain = config('vtex.master_domain');
-        $productionDomain = config('vtex.store_domain');
+        $origin = $this->prepareUrl($origin);
+        $masterDomain = $this->prepareUrl(config('vtex.master_domain'));
+        $productionDomain = $this->prepareUrl(config('vtex.store_domain'));
 
-        if ($origin === $masterDomain) {
+        if ($this->compareUrls($origin, $masterDomain)) {
             return $masterDomain;
         }
 
-        if ($origin === $productionDomain) {
+        if ($this->compareUrls($origin, $productionDomain)) {
             return $productionDomain;
         }
 
@@ -48,5 +49,33 @@ class DomainUrlService
             }
         }
         return false;
+    }
+
+    public function prepareUrl(?string $url): ?string
+    {
+        if (!$url) {
+            return $url;
+        }
+
+        return rtrim($url, '/');
+    }
+
+    /**
+     * @return string
+     */
+    public function normalizeUrl(string $url): string
+    {
+        $url = preg_replace("(^https?://)", "", $url);
+        $url = preg_replace("(^www\.)", "", $url);
+        $url = rtrim($url, '/');
+        return $url;
+    }
+
+    /**
+     * @return bool
+     */
+    public function compareUrls(string $url1, string $url2): bool
+    {
+        return $this->normalizeUrl($url1) === $this->normalizeUrl($url2);
     }
 }
